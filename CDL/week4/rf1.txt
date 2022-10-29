@@ -1,0 +1,9 @@
+#include <stdio.h> 
+#include <stdlib.h>
+
+int main(){
+    float a; 
+    int b; 
+    printf("Hello World");
+    return 0; 
+}

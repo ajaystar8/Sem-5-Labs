@@ -1,0 +1,5 @@
+main(){}$
+main(){int a; a = 5;}$
+main(){int a,b; a = 5;}$
+main(){a=b;}$
+main(){a==b;}$

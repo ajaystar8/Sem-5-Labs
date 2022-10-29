@@ -1,0 +1,11 @@
+#include <stdio.h>
+
+int main(){
+    //this is a single line comment
+    /* multi
+    line comment */
+
+    printf("Hello World");
+    int a; 
+    return 0; 
+}
