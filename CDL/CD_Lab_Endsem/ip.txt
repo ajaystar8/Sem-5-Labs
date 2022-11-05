@@ -1,9 +1,11 @@
 #include <stdio.h>
+
+void func2(){
+    printf("Hello Universe!");
+    int b= 9;  
+}
+
 int main(){
-    //comment
-    /* multi
-    line comment * ok? */
-    int a = 5; 
-    a > b;
     printf("Hello World");
+    return 0; 
 }
