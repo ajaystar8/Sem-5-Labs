@@ -1,0 +1,151 @@
+void DiskSchedulingPolicy::LOOK(){
+    // "queueLength" since, no extra ends will be added to the queue;
+    vector<int> orderOfProcessing(queueLength);
+    int totalHeadMovement = 0;
+    int currentHead = globalCurrentHead;
+    vector<int> firstHalf;
+    vector<int> secondHalf;
+    for(int i = 0; i < queueLength; ++i) {
+        if(currentHead > requestQueue[i])
+            firstHalf.push_back(requestQueue[i]);
+        else
+            secondHalf.push_back(requestQueue[i]);
+    }
+    sort(firstHalf.begin(), firstHalf.end());   
+    sort(secondHalf.begin(), secondHalf.end());   
+    for(int i=0; i<firstHalf.size(); i++) {
+        cout << firstHalf[i] << " ";
+    }
+    cout << endl;
+    for(int i=0; i<secondHalf.size(); i++) {
+        cout << secondHalf[i] << " ";
+    }
+    cout << "\nTraverse to the inner track or the outer track? \n [0] Inner Track\n [1] Outer Track \n Your Choice? " << endl;
+    int outer;
+    cin >> outer;
+    cout << endl;
+    cout << "\t\t+--------------------------------------+" << endl;
+    cout << "\t\t|Output for LOOK Disk Scheduling Policy|" << endl;
+    cout << "\t\t+--------------------------------------+" << endl;
+    cout << "\n\tHead currently at: " << currentHead << endl;        
+    cout << "\n     Iteration \t Current Head \t Disk Movement \t Total Disk Movement" << endl;
+    cout << "------------------------------------------------------------------------" << endl;        
+    int j = 0;
+    // inner track first
+    if(outer == 0) {
+        for(int i = firstHalf.size() - 1; i >= 0; --i) {
+            
+            int currentDiskMovement = abs(currentHead - firstHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = firstHalf[i];
+            currentHead = firstHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+        for(int i = 0; i < secondHalf.size(); i++) {
+            int currentDiskMovement = abs(currentHead - secondHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = secondHalf[i];
+            currentHead = secondHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+    }
+    else {
+        for(int i = 0; i < secondHalf.size(); i++) {
+            int currentDiskMovement = abs(currentHead - secondHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = secondHalf[i];
+            currentHead = secondHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+        for(int i = firstHalf.size() - 1; i >= 0; --i) {
+            int currentDiskMovement = abs(currentHead - firstHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = firstHalf[i];
+            currentHead = firstHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+    }
+    cout << "------------------------------------------------------------------------" << endl;
+    cout << "\n\tTotal Head Movement: " << totalHeadMovement << endl;
+    cout << "\n\tOrder of Processing: " << (orderOfProcessing[0]);
+    for(int i = 1; i < queueLength; ++i) {
+        cout << " -> " << orderOfProcessing[i];
+    }
+    printAverageSeekTime(totalHeadMovement, queueLength);
+    cout << endl; 
+}
+
+void DiskSchedulingPolicy::CLOOK(){
+    // "queueLength" since, no extra ends will be added to the queue;
+    vector<int> orderOfProcessing(queueLength);
+    int totalHeadMovement = 0;
+    int currentHead = globalCurrentHead;
+    vector<int> firstHalf;
+    vector<int> secondHalf;
+    for(int i = 0; i < queueLength; ++i) {
+        if(currentHead > requestQueue[i])
+        firstHalf.push_back(requestQueue[i]);
+        else
+        secondHalf.push_back(requestQueue[i]);
+    }
+    sort(firstHalf.begin(), firstHalf.end());   
+    sort(secondHalf.begin(), secondHalf.end());   
+    for(int i=0; i<firstHalf.size(); i++) {
+        cout << firstHalf[i] << " ";
+    }
+    for(int i=0; i<secondHalf.size(); i++) {
+        cout << secondHalf[i] << " ";
+    }    
+    cout << "\nTraverse to the inner track or the outer track? \n [0] Inner Track\n [1] Outer Track \n Your Choice? ";
+    int outer;
+    cin >> outer;
+    cout << endl;
+    cout << "\t\t+----------------------------------------+" << endl;
+    cout << "\t\t|Output for C-LOOK Disk Scheduling Policy|" << endl;
+    cout << "\t\t+----------------------------------------+" << endl;
+    cout << "\n\tHead currently at: " << currentHead << endl;
+    cout << "\n     Iteration \t Current Head \t Disk Movement \t Total Disk Movement" << endl;
+    cout << "------------------------------------------------------------------------" << endl;
+    int j = 0;
+    // inner track first
+    if(outer == 0) {
+        for(int i = firstHalf.size() - 1; i >= 0; --i) {
+            int currentDiskMovement = abs(currentHead - firstHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = firstHalf[i];
+            currentHead = firstHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+        for(int i = secondHalf.size() - 1; i >= 0; i--) {
+            int currentDiskMovement = abs(currentHead - secondHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = secondHalf[i];
+            currentHead = secondHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+    }
+    else {
+        for(int i = 0; i < secondHalf.size(); i++) {
+            int currentDiskMovement = abs(currentHead - secondHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = secondHalf[i];
+            currentHead = secondHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+        for(int i = 0; i < firstHalf.size(); ++i) {
+            int currentDiskMovement = abs(currentHead - firstHalf[i]);
+            totalHeadMovement += currentDiskMovement;
+            orderOfProcessing[j] = firstHalf[i];
+            currentHead = firstHalf[i];
+            cout << "\t" << (++j) << "\t\t" << currentHead << "\t\t" << currentDiskMovement << "\t\t" << totalHeadMovement << endl;
+        }
+    }
+    cout << "------------------------------------------------------------------------" << endl;
+    cout << "\n\tTotal Head Movement: " << totalHeadMovement << endl;
+    cout << "\n\tOrder of Processing: " << (orderOfProcessing[0]);
+    for(int i = 1; i < queueLength; ++i) {
+        cout << " -> " << orderOfProcessing[i];
+    }
+    printAverageSeekTime(totalHeadMovement, queueLength);
+    cout << endl;
+}
