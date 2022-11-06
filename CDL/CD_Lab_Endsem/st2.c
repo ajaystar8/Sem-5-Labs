@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#define MAX_HASH_SIZE 13
-
-FILE *fptr;
-char c, buff[100] = {0}, dbuff[100] = {0};
-int row = 1, col = 1, flag = 0;
+#define TABLE_SIZE 100
 
 struct token
 {
@@ -20,95 +16,14 @@ struct node
     char type[100];
     int size;
     char returnType[100];
-    struct node *next;
 };
 
-struct node *HashTable[MAX_HASH_SIZE];
+FILE *fptr;
+char c, buff[100] = {0}, dbuff[100] = {0};
+int row = 1, col = 1, flag = 0, idx = 0;
+struct node SymbolTable[TABLE_SIZE];
 
-// --------HASH-TABLE FUNCTIONS------------
-int getHashValue(char lexemeName[100])
-{
-    int i = 0, hashValue = 0;
-    while (lexemeName[i] != '\0')
-    {
-        hashValue += (lexemeName[i] * i);
-        i++;
-    }
-    return hashValue % MAX_HASH_SIZE;
-}
-
-int searchSymbolTable(char lexemeName[100])
-{
-    int hashValue = getHashValue(lexemeName);
-    if (!HashTable[hashValue])
-        return -1;
-    struct node *target = HashTable[hashValue];
-    int i = 0;
-    while (target)
-    {
-        if (!strcmp(lexemeName, target->lexemeName))
-            return i;
-        target = target->next;
-    }
-    return -1;
-}
-
-void insertSymbolTable(char lexemeName[100], char type[100], char returnType[100])
-{
-    if (searchSymbolTable(lexemeName) == -1)
-    {
-        // lexeme not present in Symbol Table
-        int hashValue = getHashValue(lexemeName);
-        // make new node
-        struct node *newNode = (struct node *)malloc(sizeof(struct node));
-        // fill in lexemeName
-        strcpy(newNode->lexemeName, lexemeName);
-        // fill in type
-        strcpy(newNode->type, type);
-        // fill in return type
-        strcpy(newNode->returnType, returnType);
-        // fill in size
-        if (!strcmp(type, "FUNC"))
-            newNode->size = 0;
-        else if (!strcmp(type, "int") || !strcmp(returnType, "int"))
-            newNode->size = sizeof(int);
-        else if (!strcmp(type, "char") || !strcmp(returnType, "char"))
-            newNode->size = sizeof(char);
-        else if (!strcmp(type, "float") || !strcmp(returnType, "float"))
-            newNode->size = sizeof(float);
-        else if (!strcmp(type, "double") || !strcmp(returnType, "double"))
-            newNode->size = sizeof(double);
-        //  next pointer of node
-        newNode->next = NULL;
-        // insert the newNode in Symbol Table
-        if (HashTable[hashValue] == NULL)
-        {
-            HashTable[hashValue] = newNode;
-            return;
-        }
-        struct node *current = HashTable[hashValue];
-        while (current->next != NULL)
-            current = current->next;
-        current->next = newNode;
-    }
-}
-
-void displaySymbolTable()
-{
-    printf("\n------SYMBOL TABLE------\n\n");
-    printf("LexemeName\tType\tSize\tReturn-Type\n");
-    printf("--------------------------------------------------------------------------------\n");
-    for (int i = 0; i < MAX_HASH_SIZE; i++)
-    {
-        struct node *temp = HashTable[i];
-        while (temp)
-        {
-            printf("%s\t\t%s\t%d\t%s\t\t\n", temp->lexemeName, temp->type, temp->size, temp->returnType);
-            temp = temp->next;
-        }
-    }
-}
-
+// keywords
 char keys[33][10] = {"auto", "break", "case", "char",
                      "const", "continue", "default", "do",
                      "double", "else", "enum", "extern",
@@ -119,6 +34,26 @@ char keys[33][10] = {"auto", "break", "case", "char",
                      "unsigned", "while", "volatile", "void", "main"};
 
 char symbol[9][1] = {'$', '[', ']', '(', ')', '{', '}', ',', ';'};
+
+void displaySymbolTable()
+{
+    printf("\n------SYMBOL TABLE------\n\n");
+    printf("LexemeName\tType\tSize\tReturn-Type\n");
+    printf("--------------------------------------------------------------------------------\n");
+    for (int i = 0; i < idx; i++)
+    {
+        struct node temp = SymbolTable[i];
+        printf("%s\t\t%s\t%d\t%s\t\n", temp.lexemeName, temp.type, temp.size, temp.returnType);
+    }
+}
+
+int searchSymbolTable(char lexemeName[100])
+{
+    for (int i = 0; i < idx; i++)
+        if (!strcmp(SymbolTable[i].lexemeName, lexemeName))
+            return i;
+    return 0;
+}
 
 int findSymbol(char c)
 {
@@ -210,7 +145,7 @@ loop:
         int i = 0, j = 0;
         newToken->row = row;
         newToken->col = col;
-        while (isalpha(c) || isdigit(c))
+        while (isalpha(c))
         {
             buff[i++] = c;
             c = fgetc(fptr);
@@ -224,36 +159,49 @@ loop:
             if (!strcmp(keys[j], buff))
             {
                 strcpy(newToken->tokenName, keys[j]);
-                if (!strcmp(buff, "int") || !strcmp(buff, "float") || !strcmp(buff, "char") || !strcmp(buff, "void") || !strcmp(buff, "double"))
+                if (!strcmp(buff, "int") || !strcmp(buff, "float") || !strcmp(buff, "double") || !strcmp(buff, "char") || !strcmp(buff, "void"))
                 {
                     strcpy(dbuff, buff);
                     flag = 1;
                 }
                 memset(buff, 0, 100);
-                break;
+                return newToken; // check
             }
         }
         if (j == 33)
         {
-            c = fgetc(fptr);
-            // if function present
             if (flag)
             {
+                c = fgetc(fptr);
                 if (c == '(')
                 {
                     c = fgetc(fptr);
-                    fseek(fptr, -2, SEEK_CUR);
-                    if (isalpha(c) || c == ')')
+                    if (c == ')' || isalpha(c))
                     {
-                        insertSymbolTable(buff, "FUNC", dbuff); // confirmed function
-                        flag = 0;
-                        memset(dbuff, 0, 100);
+                        if (!searchSymbolTable(buff))
+                        {
+                            struct node newNode;
+                            strcpy(newNode.lexemeName, buff);
+                            strcpy(newNode.type, "FUNC");
+                            newNode.size = 0;
+                            strcpy(newNode.returnType, dbuff);
+                            SymbolTable[idx++] = newNode;
+                        }
                     }
+                    fseek(fptr, -2, SEEK_CUR);
                 }
                 else
                 {
-                    fseek(fptr, -1, SEEK_CUR);
-                    insertSymbolTable(buff, dbuff, "NULL"); // confirmed identifier
+                    if (!searchSymbolTable(buff))
+                    {
+                        struct node newNode;
+                        strcpy(newNode.lexemeName, buff);
+                        strcpy(newNode.type, dbuff);
+                        newNode.size = sizeof(int);
+                        strcpy(newNode.returnType, "NULL");
+                        SymbolTable[idx++] = newNode;
+                        fseek(fptr, -1, SEEK_CUR);
+                    }
                 }
             }
             if (c == ';')
@@ -282,7 +230,6 @@ loop:
         fseek(fptr, -1, SEEK_CUR);
         strcpy(newToken->tokenName, "NUM");
         memset(buff, 0, 100);
-        // return newToken;
     }
     // 3) Handle Symbols
     else if (findSymbol(c) != -1)
@@ -293,7 +240,6 @@ loop:
         newToken->row = row;
         newToken->col = col;
         memset(buff, 0, 100);
-        // return newToken;
     }
     // 4) Handle String Literals
     else if (c == '"')
@@ -311,7 +257,6 @@ loop:
         buff[i] = '\0';
         strcpy(newToken->tokenName, buff);
         memset(buff, 0, 100);
-        // return newToken;
     }
     // 5) Handle Operators
     else if (c == '+' || c == '-' || c == '*' || c == '/')
@@ -328,7 +273,6 @@ loop:
         {
             strcpy(newToken->tokenName, buff);
             memset(buff, 0, 100);
-            // return newToken;
         }
         else
         {
@@ -336,7 +280,6 @@ loop:
             fseek(fptr, -1, SEEK_CUR);
             strcpy(newToken->tokenName, buff);
             memset(buff, 0, 100);
-            // return newToken;
         }
     }
     else if (c == '>' || c == '<' || c == '=')
@@ -353,7 +296,6 @@ loop:
         {
             strcpy(newToken->tokenName, buff);
             memset(buff, 0, 100);
-            // return newToken;
         }
         else
         {
@@ -361,7 +303,6 @@ loop:
             fseek(fptr, -1, SEEK_CUR);
             strcpy(newToken->tokenName, buff);
             memset(buff, 0, 100);
-            // return newToken;
         }
     }
     return newToken;
@@ -380,6 +321,5 @@ int main()
         printf("<%s, %d, %d>\n", newToken->tokenName, newToken->row, newToken->col);
     }
     displaySymbolTable();
-
     return 0;
 }
