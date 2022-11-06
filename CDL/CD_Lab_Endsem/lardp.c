@@ -39,7 +39,7 @@ void displaySymbolTable()
 {
     printf("\n------SYMBOL TABLE------\n\n");
     printf("LexemeName\tType\tSize\tReturn-Type\n");
-    printf("--------------------------------------------------------------------------------\n");
+    printf("--------------------------------------------------------\n");
     for (int i = 0; i < idx; i++)
     {
         struct node temp = SymbolTable[i];
