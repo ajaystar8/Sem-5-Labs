@@ -1,1 +1,1 @@
-main(){a==b;}$
+switch(var){case 1:a=a+b;}$
